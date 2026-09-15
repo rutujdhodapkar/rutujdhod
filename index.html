@@ -1,203 +1,41 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rutuj Dhodapkar</title>
-<link rel="icon" href="https://raw.githubusercontent.com/rutujdhodapkar/Profile/main/icons.png">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-  :root {
-    --bg: #f5f3ee;
-    --ink: #111;
-    --muted: rgba(17,17,17,0.45);
-    --border: rgba(17,17,17,0.12);
-    --pill-h: 44px;
-  }
-
-  html, body {
-    width: 100%; height: 100%;
-    background: var(--bg);
-    font-family: 'DM Sans', sans-serif;
-    overflow: hidden;
-  }
-
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none; z-index: 0;
-  }
-
-  body::after {
-    content: '';
-    position: fixed; inset: 18px;
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    pointer-events: none; z-index: 0;
-  }
-
-  /* ── Mobile banner (non-blocking) ── */
-  #mobile-banner {
-    display: none;
-    position: fixed;
-    top: 18px; left: 50%;
-    transform: translateX(-50%);
-    z-index: 50;
-    background: var(--ink);
-    color: #fff;
-    font-size: 11px;
-    letter-spacing: .04em;
-    padding: 7px 16px;
-    border-radius: 100px;
-    white-space: nowrap;
-    opacity: 0;
-    animation: slideDown .5s .3s ease forwards;
-  }
-
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
-    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-  }
-
-  @media (max-width: 768px) {
-    #mobile-banner { display: block; }
-  }
-
-  /* ── Landing ── */
-  #landing {
-    position: fixed; inset: 0;
-    display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    z-index: 2;
-    animation: fadeUp .7s ease both;
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .eyebrow {
-    font-size: 11px; letter-spacing: .18em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 12px;
-  }
-
-  h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 400;
-    color: var(--ink);
-    line-height: 1.1;
-    margin-bottom: 6px;
-  }
-
-  .tagline {
-    font-size: 13px;
-    color: var(--muted);
-    margin-bottom: 44px;
-  }
-
-  .cta {
-    display: flex; align-items: center; gap: 10px;
-    height: var(--pill-h);
-    padding: 0 26px;
-    background: var(--ink); color: #fff;
-    border: none; border-radius: 100px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 500;
-    cursor: pointer;
-    margin-bottom: 20px;
-    transition: transform .18s, box-shadow .18s;
-  }
-  .cta:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.18); }
-  .cta svg { transition: transform .2s; }
-  .cta:hover svg { transform: translateX(3px); }
-
-  .nav-row { display: flex; gap: 8px; }
-
-  /* ── Last updated ── */
-  #last-updated {
-    position: fixed;
-    bottom: 28px; left: 50%;
-    transform: translateX(-50%);
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: .06em;
-    z-index: 3;
-    white-space: nowrap;
-  }
-
-  /* ── Shell ── */
-  #shell {
-    position: fixed; inset: 0;
-    display: none; flex-direction: column;
-    z-index: 20;
-    background: #fff;
-  }
-
-  #viewer {
-    flex: 1;
-    width: 100%; border: none;
-  }
-</style>
-</head>
-<body>
-
-<!-- Soft mobile warning — no access control -->
-<div id="mobile-banner">🖥 Best viewed on desktop</div>
-
-<!-- Landing -->
-<div id="landing">
-  <p class="eyebrow">Portfolio</p>
-  <h1>Rutuj Dhodapkar</h1>
-  <p class="tagline">AI / ML · Builder · CS Student</p>
-
-  <button class="cta" onclick="openFrame('static/frame of index.html', 'Portfolio')">
-    Enter Portfolio
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M3 7h8M7 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-
-  <div class="nav-row"></div>
-</div>
-
-<!-- Last updated -->
-<div id="last-updated">Last updated: January 2026</div>
-
-<!-- Shell -->
-<div id="shell">
-  <iframe id="viewer" allowfullscreen></iframe>
-</div>
-
-<script>
-  const landing = document.getElementById('landing');
-  const shell   = document.getElementById('shell');
-  const viewer  = document.getElementById('viewer');
-
-  function openFrame(src, label) {
-    viewer.src = src;
-    shell.style.display = 'flex';
-    landing.style.display = 'none';
-  }
-
-  function goBack() {
-    viewer.src = '';
-    shell.style.display = 'none';
-    landing.style.display = 'flex';
-  }
-
-  function openExternal(url) {
-    window.open(url, '_blank', 'noopener,noreferrer');
-  }
-</script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11100f" />
+    <meta name="author" content="Rutuj Dhodapkar" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="description" content="Rutuj Dhodapkar is an AI and machine learning builder creating thoughtful models, intelligent systems, and useful digital products." />
+    <meta name="keywords" content="Rutuj Dhodapkar, AI developer, machine learning developer, artificial intelligence, deep learning, computer vision, AI portfolio" />
+    <link rel="canonical" href="https://rutujdhodapkar.tech/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Rutuj Dhodapkar — AI & Machine Learning Builder" />
+    <meta property="og:description" content="Selected AI, machine learning, computer vision, and product experiments by Rutuj Dhodapkar." />
+    <meta property="og:image" content="/icons.png" />
+    <meta property="og:image:alt" content="Rutuj Dhodapkar portfolio" />
+    <meta property="og:site_name" content="Rutuj Dhodapkar" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Rutuj Dhodapkar — AI & Machine Learning Builder" />
+    <meta name="twitter:description" content="Selected AI, machine learning, computer vision, and product experiments by Rutuj Dhodapkar." />
+    <meta name="twitter:image" content="/icons.png" />
+    <link rel="icon" type="image/png" href="/icons.png" />
+    <title>Rutuj Dhodapkar — AI & Machine Learning Builder</title>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Rutuj Dhodapkar",
+        "jobTitle": "AI and Machine Learning Builder",
+        "email": "rutuj@fennark.xyz",
+        "sameAs": [
+          "https://github.com/rutujdhodapkar",
+          "https://linkedin.com/in/rutujdhodapkar/",
+          "https://x.com/rutujdhodapkar/"
+        ],
+        "knowsAbout": ["Artificial Intelligence", "Machine Learning", "Deep Learning", "Computer Vision"]
+      }
+    </script>
+  </head>
+  <body><div id="root"></div><script type="module" src="/src/main.jsx"></script></body>
 </html>
