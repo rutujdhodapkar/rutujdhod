@@ -116,21 +116,17 @@ function VisitCounter() {
 }
 
 function AdminDashboard() {
-  const [key, setKey] = React.useState('');
   const [records, setRecords] = React.useState(null);
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
 
-  const loadAnalytics = async (event, accessKey = key) => {
-    event?.preventDefault();
+  const loadAnalytics = async () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/admin-analytics', { headers: { 'x-admin-key': accessKey } });
-      const body = await response.json();
-      if (!response.ok) throw new Error(body.error || 'Unable to load analytics.');
-      setRecords(body.visits || {});
-      sessionStorage.setItem('rutuj-admin-key', accessKey);
+      const response = await fetch(`${ANALYTICS_URL}.json`);
+      if (!response.ok) throw new Error('Unable to load visitor data.');
+      setRecords(await response.json() || {});
     } catch (requestError) {
       setError(requestError.message);
       setRecords(null);
@@ -140,8 +136,7 @@ function AdminDashboard() {
   };
 
   useEffect(() => {
-    const savedKey = sessionStorage.getItem('rutuj-admin-key');
-    if (savedKey) { setKey(savedKey); loadAnalytics({ preventDefault() {} }, savedKey); }
+    loadAnalytics();
   }, []);
 
   const rows = records ? Object.entries(records).map(([id, visit]) => ({ id, ...visit })).sort((a, b) => Number(b.at || 0) - Number(a.at || 0)) : [];
@@ -154,7 +149,7 @@ function AdminDashboard() {
   const totalVisits = rows.length;
   const averageVisits = uniqueVisitors ? (totalVisits / uniqueVisitors).toFixed(1) : '0.0';
 
-  return <main className="admin-page"><div className="admin-shell"><header className="admin-header"><a className="admin-brand" href="/">RD<span>.</span></a><div><div className="admin-kicker">PRIVATE ANALYTICS</div><h1>Visitor dashboard</h1></div><a className="admin-back" href="/">BACK TO SITE ↗</a></header><section className="admin-intro"><p>Anonymous, coarse analytics only. No IP address, precise location, network identity, or fingerprint is collected.</p><form className="admin-login" onSubmit={loadAnalytics}><input type="password" value={key} onChange={event => setKey(event.target.value)} placeholder="Admin access key" aria-label="Admin access key"/><button type="submit" disabled={loading}>{loading ? 'LOADING…' : 'OPEN DASHBOARD'}</button></form>{error && <p className="admin-error">{error}</p>}</section>{records && <><section className="admin-summary"><div><span>TOTAL VISITS</span><strong>{totalVisits}</strong></div><div><span>UNIQUE VISITORS</span><strong>{uniqueVisitors}</strong></div><div><span>VISITS / VISITOR</span><strong>{averageVisits}</strong></div></section><section className="admin-table-wrap"><table><thead><tr><th>TIME</th><th>VISITOR</th><th>DEVICE</th><th>BROWSER</th><th>SCREEN</th><th>LANGUAGE</th><th>VISITS</th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td>{row.at ? new Date(Number(row.at)).toLocaleString() : '—'}</td><td className="admin-visitor">{(row.visitorId || 'legacy-visitor').slice(0, 12)}…</td><td>{row.device || '—'}</td><td>{row.browser || '—'}</td><td>{row.screen || '—'}</td><td>{row.language || '—'}</td><td>{visitorTotals[row.visitorId || 'legacy-visitor']}</td></tr>)}</tbody></table>{rows.length === 0 && <div className="admin-empty">No visits recorded yet.</div>}</section></>}</div></main>;
+  return <main className="admin-page"><div className="admin-shell"><header className="admin-header"><a className="admin-brand" href="/">RD<span>.</span></a><div><div className="admin-kicker">PRIVATE ANALYTICS</div><h1>Visitor dashboard</h1></div><a className="admin-back" href="/">BACK TO SITE ↗</a></header><section className="admin-intro"><p>Anonymous, coarse analytics only. No IP address, precise location, network identity, or fingerprint is collected.</p><button className="admin-refresh" onClick={loadAnalytics} disabled={loading}>{loading ? 'LOADING…' : 'REFRESH DATA'}</button>{error && <p className="admin-error">{error}</p>}</section>{records && <><section className="admin-summary"><div><span>TOTAL VISITS</span><strong>{totalVisits}</strong></div><div><span>UNIQUE VISITORS</span><strong>{uniqueVisitors}</strong></div><div><span>VISITS / VISITOR</span><strong>{averageVisits}</strong></div></section><section className="admin-table-wrap"><table><thead><tr><th>TIME</th><th>VISITOR</th><th>DEVICE</th><th>BROWSER</th><th>SCREEN</th><th>LANGUAGE</th><th>VISITS</th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td>{row.at ? new Date(Number(row.at)).toLocaleString() : '—'}</td><td className="admin-visitor">{(row.visitorId || 'legacy-visitor').slice(0, 12)}…</td><td>{row.device || '—'}</td><td>{row.browser || '—'}</td><td>{row.screen || '—'}</td><td>{row.language || '—'}</td><td>{visitorTotals[row.visitorId || 'legacy-visitor']}</td></tr>)}</tbody></table>{rows.length === 0 && <div className="admin-empty">No visits recorded yet.</div>}</section></>}</div></main>;
 }
 
 function BrandIcon({ name }) {

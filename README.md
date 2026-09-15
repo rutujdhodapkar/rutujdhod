@@ -9,12 +9,10 @@ npm install
 npm run dev
 ```
 
-## Admin analytics setup
+## Admin analytics
 
-The private dashboard is available at `/admin`. Add these Vercel environment variables before using it:
-
-- `ADMIN_DASHBOARD_KEY`: a long random password for the dashboard
-- `FIREBASE_DATABASE_URL`: `https://freelancing-ffae0-default-rtdb.firebaseio.com`
-- `FIREBASE_DATABASE_TOKEN`: optional Firebase database token if the database read rules require one
+The dashboard is available at `/admin`. It reads the visitor collection from the configured Firebase Realtime Database URL.
 
 The visitor logger stores only an anonymous visitor ID, timestamp, broad device category, browser family, screen class, and language. A browser is counted at most once every 10 minutes.
+
+For a truly private dashboard, configure Firebase Authentication and database read rules before production use. The current dashboard is intended for the provided database while its read endpoint remains available.
