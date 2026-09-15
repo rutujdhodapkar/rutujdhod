@@ -49,6 +49,21 @@ const railMessages = [
   'SAY HELLO'
 ];
 const ANALYTICS_URL = 'https://freelancing-ffae0-default-rtdb.firebaseio.com/portfolioAnalytics/visits';
+const VISITOR_ID_KEY = 'rutuj-portfolio-visitor-id';
+const LAST_VISIT_KEY = 'rutuj-portfolio-last-visit';
+
+function getVisitorId() {
+  try {
+    let id = localStorage.getItem(VISITOR_ID_KEY);
+    if (!id) {
+      id = window.crypto?.randomUUID?.() || `visitor-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      localStorage.setItem(VISITOR_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return 'session-only';
+  }
+}
 
 function getDeviceCategory() {
   if (window.matchMedia('(pointer: coarse)').matches) return 'touch';
@@ -64,23 +79,33 @@ function getBrowserFamily() {
   return 'other';
 }
 
+function getScreenClass() {
+  if (window.innerWidth < 600) return 'phone';
+  if (window.innerWidth < 1100) return 'tablet-small';
+  return 'desktop';
+}
+
 function VisitCounter() {
   const [count, setCount] = React.useState(null);
   useEffect(() => {
     let active = true;
     const recordVisit = async () => {
       try {
-        if (!sessionStorage.getItem('rutuj-portfolio-visit')) {
+        const lastVisit = Number(localStorage.getItem(LAST_VISIT_KEY) || 0);
+        if (Date.now() - lastVisit >= 10 * 60 * 1000) {
           await fetch(`${ANALYTICS_URL}.json`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               at: { '.sv': 'timestamp' },
+              visitorId: getVisitorId(),
               device: getDeviceCategory(),
-              browser: getBrowserFamily()
+              browser: getBrowserFamily(),
+              screen: getScreenClass(),
+              language: navigator.language || 'unknown'
             })
           });
-          sessionStorage.setItem('rutuj-portfolio-visit', '1');
+          localStorage.setItem(LAST_VISIT_KEY, String(Date.now()));
         }
         const response = await fetch(`${ANALYTICS_URL}.json?shallow=true`);
         const visits = await response.json();
@@ -93,6 +118,48 @@ function VisitCounter() {
     return () => { active = false; };
   }, []);
   return <span className="visit-count" aria-label="Anonymous portfolio visit count">{count === null ? 'VISITS' : `${count} VISITS`}</span>;
+}
+
+function AdminDashboard() {
+  const [key, setKey] = React.useState('');
+  const [records, setRecords] = React.useState(null);
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const loadAnalytics = async (event, accessKey = key) => {
+    event?.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('/api/admin-analytics', { headers: { 'x-admin-key': accessKey } });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || 'Unable to load analytics.');
+      setRecords(body.visits || {});
+      sessionStorage.setItem('rutuj-admin-key', accessKey);
+    } catch (requestError) {
+      setError(requestError.message);
+      setRecords(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const savedKey = sessionStorage.getItem('rutuj-admin-key');
+    if (savedKey) { setKey(savedKey); loadAnalytics({ preventDefault() {} }, savedKey); }
+  }, []);
+
+  const rows = records ? Object.entries(records).map(([id, visit]) => ({ id, ...visit })).sort((a, b) => Number(b.at || 0) - Number(a.at || 0)) : [];
+  const visitorTotals = rows.reduce((totals, row) => {
+    const visitor = row.visitorId || 'legacy-visitor';
+    totals[visitor] = (totals[visitor] || 0) + 1;
+    return totals;
+  }, {});
+  const uniqueVisitors = Object.keys(visitorTotals).length;
+  const totalVisits = rows.length;
+  const averageVisits = uniqueVisitors ? (totalVisits / uniqueVisitors).toFixed(1) : '0.0';
+
+  return <main className="admin-page"><div className="admin-shell"><header className="admin-header"><a className="admin-brand" href="/">RD<span>.</span></a><div><div className="admin-kicker">PRIVATE ANALYTICS</div><h1>Visitor dashboard</h1></div><a className="admin-back" href="/">BACK TO SITE ↗</a></header><section className="admin-intro"><p>Anonymous, coarse analytics only. No IP address, precise location, network identity, or fingerprint is collected.</p><form className="admin-login" onSubmit={loadAnalytics}><input type="password" value={key} onChange={event => setKey(event.target.value)} placeholder="Admin access key" aria-label="Admin access key"/><button type="submit" disabled={loading}>{loading ? 'LOADING…' : 'OPEN DASHBOARD'}</button></form>{error && <p className="admin-error">{error}</p>}</section>{records && <><section className="admin-summary"><div><span>TOTAL VISITS</span><strong>{totalVisits}</strong></div><div><span>UNIQUE VISITORS</span><strong>{uniqueVisitors}</strong></div><div><span>VISITS / VISITOR</span><strong>{averageVisits}</strong></div></section><section className="admin-table-wrap"><table><thead><tr><th>TIME</th><th>VISITOR</th><th>DEVICE</th><th>BROWSER</th><th>SCREEN</th><th>LANGUAGE</th><th>VISITS</th></tr></thead><tbody>{rows.map(row => <tr key={row.id}><td>{row.at ? new Date(Number(row.at)).toLocaleString() : '—'}</td><td className="admin-visitor">{(row.visitorId || 'legacy-visitor').slice(0, 12)}…</td><td>{row.device || '—'}</td><td>{row.browser || '—'}</td><td>{row.screen || '—'}</td><td>{row.language || '—'}</td><td>{visitorTotals[row.visitorId || 'legacy-visitor']}</td></tr>)}</tbody></table>{rows.length === 0 && <div className="admin-empty">No visits recorded yet.</div>}</section></>}</div></main>;
 }
 
 function BrandIcon({ name }) {
@@ -230,4 +297,5 @@ function App() {
   </main></>;
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+const isAdminPage = window.location.pathname.replace(/\/+$/, '') === '/admin';
+createRoot(document.getElementById('root')).render(isAdminPage ? <AdminDashboard /> : <App />);
