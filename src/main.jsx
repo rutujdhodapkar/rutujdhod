@@ -276,7 +276,7 @@ function App() {
   </main></>;
 }
 
-const isAdminPage = window.location.pathname.replace(/\/+$/, '') === '/admin';
+const isAdminPage = ['/admin', '/admin.html'].includes(window.location.pathname.replace(/\/+$/, '') || '/');
 console.log(`╔══════════════════════════════════════╗
 ║  What you expect here                 ║
 ║  go back theres nothing usefull here  ║
