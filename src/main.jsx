@@ -41,13 +41,7 @@ const developmentProjects = [
 const skills = ['Artificial Intelligence', 'Machine Learning', 'Deep Learning', 'Computer Vision', 'Python', 'JavaScript', 'Cloud Computing', 'Big Data Analytics'];
 const certificates = [];
 const railMessages = [
-  'EMAIL: RUTUJ@FENNARK.XYZ',
-  'BUILD A THING',
-  'RESEARCH · AI · SYSTEMS',
-  'OPEN TO GOOD QUESTIONS',
-  "I DON'T KNOW WHAT TO ADD HERE BUT IT LOOKS COOL I GUESS",
-  'PUNE · INDIA · 2026',
-  'SAY HELLO'
+  "I DON'T KNOW WHAT TO ADD HERE BUT IT LOOKS COOL I GUESS"
 ];
 const ANALYTICS_URL = 'https://freelancing-ffae0-default-rtdb.firebaseio.com/portfolioAnalytics/visits';
 const VISITOR_ID_KEY = 'rutuj-portfolio-visitor-id';
@@ -283,4 +277,12 @@ function App() {
 }
 
 const isAdminPage = window.location.pathname.replace(/\/+$/, '') === '/admin';
+console.log(`╔══════════════════════════════════════╗
+║  What you expect here                 ║
+║  go back theres nothing usefull here  ║
+╚══════════════════════════════════════╝
+index-Contacts : ceo@Fennark.xyz
+Company  : https://www.fennark.xyz
+Founder  : rutuj@fennaark.xyz
+Contact  : https://contact.rutujdhodapkar.tech`);
 createRoot(document.getElementById('root')).render(isAdminPage ? <AdminDashboard /> : <App />);
