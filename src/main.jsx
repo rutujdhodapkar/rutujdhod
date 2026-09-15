@@ -45,6 +45,7 @@ const railMessages = [
   'BUILD A THING',
   'RESEARCH · AI · SYSTEMS',
   'OPEN TO GOOD QUESTIONS',
+  "I DON'T KNOW WHAT TO ADD HERE BUT IT LOOKS COOL I GUESS",
   'PUNE · INDIA · 2026',
   'SAY HELLO'
 ];
@@ -195,47 +196,29 @@ function ProjectCard({ project }) {
 }
 
 function LoadingScreen({ onComplete }) {
-  const [progress, setProgress] = React.useState(7);
-  const [leaving, setLeaving] = React.useState(false);
-  const [pointer, setPointer] = React.useState({ x: 50, y: 50 });
-
   useEffect(() => {
     let active = true;
-    let exitTimer;
-    let removeTimer;
     const finishWhenReady = async () => {
       try { await document.fonts?.ready; } catch { /* Font loading is non-critical. */ }
       if (!active) return;
       const finish = () => {
-        setProgress(100);
-        exitTimer = window.setTimeout(() => setLeaving(true), 1000);
-        removeTimer = window.setTimeout(onComplete, 1500);
+        window.setTimeout(onComplete, 1000);
       };
       if (document.readyState === 'complete') finish();
       else window.addEventListener('load', finish, { once: true });
     };
-    const progressTimer = window.setInterval(() => setProgress(value => Math.min(value + 2, 92)), 70);
     finishWhenReady();
     return () => {
       active = false;
-      window.clearInterval(progressTimer);
-      window.clearTimeout(exitTimer);
-      window.clearTimeout(removeTimer);
     };
   }, [onComplete]);
 
-  return <div className={`loading-screen${leaving ? ' is-leaving' : ''}`} style={{ '--loader-x': `${pointer.x}%`, '--loader-y': `${pointer.y}%` }} onPointerMove={event => setPointer({ x: event.clientX / window.innerWidth * 100, y: event.clientY / window.innerHeight * 100 })} role="status" aria-live="polite" aria-label="Loading portfolio">
-    <div className="loader-grid" />
-    <div className="loader-orbit loader-orbit-one" />
-    <div className="loader-orbit loader-orbit-two" />
-    <div className="loader-topline"><span>RD<span className="loader-accent">.</span></span><span>PORTFOLIO / 2026</span></div>
-    <div className="loader-center"><div className="loader-kicker">INITIALIZING SYSTEMS</div><div className="loader-logo">R<span>D</span></div><div className="loader-message">A THOUGHTFUL INTERFACE<br/>IS COMING ONLINE</div></div>
-    <div className="loader-bottomline"><div className="loader-progress"><span style={{ width: `${progress}%` }} /></div><span className="loader-percent">{String(progress).padStart(3, '0')}%</span><span className="loader-status">LOADING / READYING THE WORK</span></div>
-  </div>;
+  return <div className="loading-screen loading-screen-static" role="status" aria-live="polite" aria-label="Loading portfolio">Loading</div>;
 }
 
 function App() {
   const [loading, setLoading] = React.useState(true);
+  const scrollTarget = React.useRef(0);
   const jump = (id) => {
     const section = document.getElementById(id);
     const scroller = document.querySelector('.site-shell');
@@ -244,16 +227,18 @@ function App() {
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
-    scroller.scrollTo({ left: section.offsetLeft, behavior: 'smooth' });
+    const left = section.getBoundingClientRect().left - scroller.getBoundingClientRect().left + scroller.scrollLeft;
+    scrollTarget.current = Math.max(0, Math.min(left, scroller.scrollWidth - scroller.clientWidth));
+    scroller.scrollTo({ left: scrollTarget.current, behavior: 'smooth' });
   };
   useEffect(() => {
     const scroller = document.querySelector('.site-shell');
-    let target = scroller?.scrollLeft || 0;
+    scrollTarget.current = scroller?.scrollLeft || 0;
     let frame = 0;
     const easeToTarget = () => {
       if (!scroller) return;
-      const distance = target - scroller.scrollLeft;
-      if (Math.abs(distance) < 0.5) { scroller.scrollLeft = target; frame = 0; return; }
+      const distance = scrollTarget.current - scroller.scrollLeft;
+      if (Math.abs(distance) < 0.5) { scroller.scrollLeft = scrollTarget.current; frame = 0; return; }
       scroller.scrollLeft += distance * 0.2;
       frame = requestAnimationFrame(easeToTarget);
     };
@@ -267,7 +252,7 @@ function App() {
       }
       if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
         const max = scroller.scrollWidth - scroller.clientWidth;
-        target = Math.max(0, Math.min(max, target + event.deltaY * 0.92 + event.deltaX));
+        scrollTarget.current = Math.max(0, Math.min(max, scrollTarget.current + event.deltaY * 0.92 + event.deltaX));
         if (!frame) frame = requestAnimationFrame(easeToTarget);
         event.preventDefault();
       }
