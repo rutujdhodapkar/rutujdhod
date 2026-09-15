@@ -155,3 +155,27 @@ body::-webkit-scrollbar-thumb,.project-grid::-webkit-scrollbar-thumb{background:
 .contact-panel h2,.contact-panel h2 em,.contact-panel p,.contact-panel .eyebrow,.contact-panel .contact-links a,.contact-panel .contact-links::before,.contact-panel .contact-footer,.contact-panel .contact-footer a{color:#20130f!important;text-shadow:none}
 .contact-panel h2 em{color:#20130f!important}
 .contact-button{background:var(--paper);color:#20130f!important}.contact-button::before{content:'rutuj@fennark.xyz  /  rutujdhodapkar@gmail.com';color:#20130f}
+
+/* Startup loader: motion is isolated here so the portfolio itself stays calm. */
+.loading-screen{position:fixed;inset:0;z-index:100;overflow:hidden;background:#0b0a09;color:var(--paper);display:grid;grid-template-rows:auto 1fr auto;padding:28px 4vw 32px;isolation:isolate;opacity:1;visibility:visible;transition:opacity .5s ease,visibility .5s ease}
+.loading-screen::before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at var(--loader-x) var(--loader-y),rgba(227,87,34,.24),transparent 23%),radial-gradient(circle at 50% 50%,rgba(227,87,34,.07),transparent 34%);pointer-events:none}
+.loading-screen.is-leaving{opacity:0;visibility:hidden}
+.loader-grid{position:absolute;inset:0;z-index:-2;opacity:.34;background-image:linear-gradient(rgba(243,234,223,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(243,234,223,.075) 1px,transparent 1px);background-size:58px 58px;mask-image:linear-gradient(to bottom,transparent,black 25%,black 75%,transparent)}
+.loader-orbit{position:absolute;border:1px solid rgba(227,87,34,.42);border-radius:50%;pointer-events:none;animation:loader-orbit 9s linear infinite}
+.loader-orbit-one{width:52vw;height:52vw;left:24vw;top:18vh;box-shadow:0 0 70px rgba(227,87,34,.08),inset 0 0 70px rgba(227,87,34,.06)}
+.loader-orbit-two{width:22vw;height:22vw;left:39vw;top:33vh;border-color:rgba(243,234,223,.42);animation-duration:6s;animation-direction:reverse}
+.loader-topline,.loader-bottomline{position:relative;z-index:2;display:flex;align-items:center;gap:22px;font-size:10px;letter-spacing:1.8px;font-weight:800}
+.loader-topline>span:last-child,.loader-status{margin-left:auto;color:var(--muted);font-size:9px;font-weight:400}
+.loader-accent{color:var(--orange)}
+.loader-center{position:relative;align-self:center;justify-self:center;text-align:center;transform:translateY(-3vh)}
+.loader-kicker{color:var(--orange);font-size:10px;font-weight:800;letter-spacing:3px;margin-bottom:28px}
+.loader-logo{font-family:PortfolioDisplay,Georgia,serif;font-size:clamp(120px,20vw,280px);line-height:.7;letter-spacing:-.11em;color:var(--paper);text-shadow:0 0 32px rgba(227,87,34,.25);animation:loader-breathe 2.8s ease-in-out infinite}
+.loader-logo span{color:var(--orange)}
+.loader-message{margin-top:34px;color:var(--muted);font-size:10px;line-height:1.8;letter-spacing:2.3px}
+.loader-progress{height:3px;flex:1;max-width:280px;background:rgba(243,234,223,.18);overflow:hidden}
+.loader-progress span{display:block;height:100%;background:var(--orange);box-shadow:0 0 15px rgba(227,87,34,.8);transition:width .15s linear}
+.loader-percent{min-width:35px;color:var(--orange);font-variant-numeric:tabular-nums}
+@keyframes loader-orbit{to{transform:rotate(360deg)}}
+@keyframes loader-breathe{0%,100%{transform:scale(.98);opacity:.82}50%{transform:scale(1.02);opacity:1}}
+@media(max-width:899px){.loading-screen{padding:22px 20px 25px}.loader-topline,.loader-bottomline{gap:10px;font-size:8px}.loader-topline>span:last-child,.loader-status{font-size:7px}.loader-status{display:none}.loader-grid{background-size:38px 38px}.loader-orbit-one{width:105vw;height:105vw;left:-3vw;top:25vh}.loader-orbit-two{width:52vw;height:52vw;left:24vw;top:39vh}.loader-kicker{font-size:8px;letter-spacing:2px}.loader-logo{font-size:42vw}.loader-message{font-size:8px;letter-spacing:1.5px;margin-top:27px}.loader-progress{max-width:none}}
+@media(prefers-reduced-motion:reduce){.loader-orbit,.loader-logo{animation:none}.loading-screen{transition:none}}

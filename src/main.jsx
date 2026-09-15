@@ -127,7 +127,48 @@ function ProjectCard({ project }) {
   </article>;
 }
 
+function LoadingScreen({ onComplete }) {
+  const [progress, setProgress] = React.useState(7);
+  const [leaving, setLeaving] = React.useState(false);
+  const [pointer, setPointer] = React.useState({ x: 50, y: 50 });
+
+  useEffect(() => {
+    let active = true;
+    let exitTimer;
+    let removeTimer;
+    const finishWhenReady = async () => {
+      try { await document.fonts?.ready; } catch { /* Font loading is non-critical. */ }
+      if (!active) return;
+      const finish = () => {
+        setProgress(100);
+        exitTimer = window.setTimeout(() => setLeaving(true), 1000);
+        removeTimer = window.setTimeout(onComplete, 1500);
+      };
+      if (document.readyState === 'complete') finish();
+      else window.addEventListener('load', finish, { once: true });
+    };
+    const progressTimer = window.setInterval(() => setProgress(value => Math.min(value + 2, 92)), 70);
+    finishWhenReady();
+    return () => {
+      active = false;
+      window.clearInterval(progressTimer);
+      window.clearTimeout(exitTimer);
+      window.clearTimeout(removeTimer);
+    };
+  }, [onComplete]);
+
+  return <div className={`loading-screen${leaving ? ' is-leaving' : ''}`} style={{ '--loader-x': `${pointer.x}%`, '--loader-y': `${pointer.y}%` }} onPointerMove={event => setPointer({ x: event.clientX / window.innerWidth * 100, y: event.clientY / window.innerHeight * 100 })} role="status" aria-live="polite" aria-label="Loading portfolio">
+    <div className="loader-grid" />
+    <div className="loader-orbit loader-orbit-one" />
+    <div className="loader-orbit loader-orbit-two" />
+    <div className="loader-topline"><span>RD<span className="loader-accent">.</span></span><span>PORTFOLIO / 2026</span></div>
+    <div className="loader-center"><div className="loader-kicker">INITIALIZING SYSTEMS</div><div className="loader-logo">R<span>D</span></div><div className="loader-message">A THOUGHTFUL INTERFACE<br/>IS COMING ONLINE</div></div>
+    <div className="loader-bottomline"><div className="loader-progress"><span style={{ width: `${progress}%` }} /></div><span className="loader-percent">{String(progress).padStart(3, '0')}%</span><span className="loader-status">LOADING / READYING THE WORK</span></div>
+  </div>;
+}
+
 function App() {
+  const [loading, setLoading] = React.useState(true);
   const jump = (id) => {
     const section = document.getElementById(id);
     const scroller = document.querySelector('.site-shell');
@@ -167,7 +208,7 @@ function App() {
     window.addEventListener('wheel', moveSideways, { passive: false });
     return () => { window.removeEventListener('wheel', moveSideways); cancelAnimationFrame(frame); };
   }, []);
-  return <main className="site-shell">
+  return <>{loading && <LoadingScreen onComplete={() => setLoading(false)} />}<main className="site-shell" aria-hidden={loading}>
     <nav className="topbar" aria-label="Primary navigation"><button className="brand" onClick={() => jump('home')} aria-label="Go to homepage">RD<span>.</span></button><div className="nav-links"><button onClick={() => jump('work')}>WORK</button><button onClick={() => jump('about')}>ABOUT</button><button onClick={() => jump('lab')}>LAB</button><button onClick={() => jump('contact')}>CONTACT</button></div><div className="header-actions"><a className="header-resume" href="https://resume.rutujdhodapkar.tech" target="_blank" rel="noreferrer">RESUME</a><a className="header-email" href={profile.socials.email}>rutuj@fennark.xyz</a></div></nav>
     <div className="deck">
       <section id="home" className="panel hero-panel">
@@ -186,7 +227,7 @@ function App() {
 
       <section id="contact" className="panel contact-panel"><div className="contact-glow"/><div className="eyebrow accent">05 — MAKE SOMETHING REAL</div><h2>Let’s make the<br/><em>next thing.</em></h2><p>Have a problem worth thinking deeply about? I’m always open to interesting conversations, collaborations and ambitious builds.</p><a className="contact-button" href={profile.socials.email}>rutujdhodapkar@gmail.com <ArrowUpRight size={18}/></a><div className="contact-links"><a href={profile.socials.github} target="_blank" rel="noreferrer"><span>GITHUB</span><b>rutujdhodapkar</b><ArrowUpRight size={16}/></a><a href={profile.socials.linkedin} target="_blank" rel="noreferrer"><span>LINKEDIN</span><b>rutujdhodapkar</b><ArrowUpRight size={16}/></a><a href={profile.socials.x} target="_blank" rel="noreferrer"><span>X / TWITTER</span><b>@rutujdhodapkar</b><ArrowUpRight size={16}/></a></div><div className="contact-footer"><Socials/><VisitCounter/><span>© {new Date().getFullYear()} RUTUJ DHODAPKAR</span><span>BUILT WITH CURIOSITY</span></div></section>
     </div>
-  </main>;
+  </main></>;
 }
 
 createRoot(document.getElementById('root')).render(<App />);
